@@ -1,0 +1,19 @@
+url_1=https://raw.githubusercontent.com/racaljk/hosts/master/hosts
+url_2=https://coding.net/u/scaffrey/p/hosts/git/raw/master/hosts
+
+if [ $# -eq 0 ]
+then
+  tools=curl
+else
+  tools=$1
+fi
+
+$tools $url_1 $2 $3 $4 $5 $6 -o /tmp/hosts
+if [ $? != 0 ]
+then
+  $tools $url_2 $2 $3 $4 $5 $6 -o /tmp/hosts
+fi
+
+sudo cp /etc/hosts /etc/hosts.backup
+sudo cp /tmp/hosts /etc/hosts
+rm -f /tmp/hosts
