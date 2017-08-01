@@ -58,3 +58,4 @@ cat "$download_file" >> "$swap_file"
 # 更新
 sudo cp $swap_file $hosts
 sudo rm -f $swap_file
+sudo rm -f $download_file
