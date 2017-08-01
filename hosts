@@ -1,6 +1,16 @@
-url_1="https://coding.net/u/scaffrey/p/hosts/git/raw/master/hosts"
-url_2="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
+url_main="https://coding.net/u/scaffrey/p/hosts/git/raw/master/hosts"
+url_backup="https://raw.githubusercontent.com/racaljk/hosts/master/hosts"
 
+hosts="/etc/hosts"
+backup_file="/etc/hosts.backup"
+download_file="/tmp/hosts"
+swap_file="/tmp/hosts.swap"
+
+
+begin_mark="# 远程 hosts 开始标记，请在 上方 添加其他内容"
+end_mark="# 远程 hosts 结束标记，请在 下方 添加其他内容"
+
+# 默认和自定义
 if [ $# -eq 0 ]
 then
   tools=curl
@@ -10,20 +20,41 @@ else
   out="-o"
 fi
 
+# 下载
 echo "正在更新 hosts..."
-$tools $url_1 $2 $3 $4 $5 $6 $out /tmp/hosts
+$tools $url_main $2 $3 $4 $5 $6 $7 $8 $9 $out $download_file
 if [ $? != 0 ]
 then
   echo "hosts 下载失败"
   echo "正在更新 hosts...(备用地址)"
-  $tools $url_2 $2 $3 $4 $5 $6 $out /tmp/hosts
-fi
-if [ $? != 0 ]
-then
-  echo "hosts 下载失败"
-  exit 2
+  $tools $url_backup $2 $3 $4 $5 $6 $7 $8 $9 $10 $11 $out $download_file
+  if [ $? != 0 ]
+  then
+    echo "hosts 下载失败"
+    exit 1
+  fi
 fi
 
-sudo cp /etc/hosts /etc/hosts.backup
-sudo cp /tmp/hosts /etc/hosts
-rm -f /tmp/hosts
+# 标记以内内容
+sed -e '1i\'$'\n'"$begin_mark" -e '$a\'$'\n'"$end_mark" "$download_file" > "$swap_file"
+sudo mv -f "$swap_file" "$download_file"
+
+# 备份
+sudo cp $hosts $backup_file
+
+# 标记以外内容
+if grep -q "$begin_mark" "$hosts"
+then
+			sed "/$begin_mark/,/$end_mark/d" "$hosts" >> "$swap_file"
+	else
+		echo "警告: $hosts 中没有发现此脚本所作标记，" \
+					"更新后会清空之前的所有内容。" >&2
+		echo "请从 $backup_file 中手动恢复需要的 hosts 记录" >&2
+fi
+
+# 标记内外连接
+cat "$download_file" >> "$swap_file"
+
+# 更新
+sudo cp $swap_file $hosts
+sudo rm -f $swap_file
