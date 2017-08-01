@@ -1,5 +1,5 @@
-url_1=https://raw.githubusercontent.com/racaljk/hosts/master/hosts
-url_2=https://coding.net/u/scaffrey/p/hosts/git/raw/master/hosts
+url_1=https://coding.net/u/scaffrey/p/hosts/git/raw/master/hosts
+url_2=https://raw.githubusercontent.com/racaljk/hosts/master/hosts
 
 if [ $# -eq 0 ]
 then
